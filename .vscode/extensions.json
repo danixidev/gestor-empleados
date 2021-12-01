@@ -1,0 +1,19 @@
+{
+    "recommendations": [
+        "ericliu.coldcode",
+        "ryannaddy.laravel-artisan",
+        "coenraads.bracket-pair-colorizer",
+        "streetsidesoftware.code-spell-checker",
+        "mikestead.dotenv",
+        "editorconfig.editorconfig",
+        "onecentlin.laravel-blade",
+        "onecentlin.laravel-extension-pack",
+        "amiralizadeh9480.laravel-extra-intellisense",
+        "codingyu.laravel-goto-view",
+        "onecentlin.laravel5-snippets",
+        "stef-k.laravel-goto-controller",
+        "yzhang.markdown-all-in-one",
+        "pkief.material-icon-theme",
+        "christian-kohler.path-intellisense"
+    ]
+}
