@@ -20,7 +20,7 @@ class UsersController extends Controller
         ]);
 
         if ($validator->fails()) {
-            $response = ['status'=>0, 'msg'=>'Faltan datos por introducir o los datos han sido introducidos de forma erronea.'];
+            $response = ['status'=>0, 'msg'=>$validator->errors()->first()];
         } else {
             $response = ['status'=>1, 'msg'=>''];
 
@@ -45,6 +45,21 @@ class UsersController extends Controller
 
 
         }
+        return response()->json($response);
+    }
+    public function view(Request $req) {
+        $response = ['status'=>1, 'msg'=>''];
+
+        $data = $req->getContent();
+        $data = json_decode($data);
+
+        try {
+            $response['data'] = ;
+        } catch (\Throwable $th) {
+            $response['msg'] = "Se ha producido un error:".$th->getMessage();
+            $response['status'] = 0;
+        }
+
         return response()->json($response);
     }
 }
