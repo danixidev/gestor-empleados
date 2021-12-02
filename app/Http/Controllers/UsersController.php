@@ -54,7 +54,7 @@ class UsersController extends Controller
         $data = json_decode($data);
 
         try {
-            $response['data'] = ;
+            // $response['data'] = ;
         } catch (\Throwable $th) {
             $response['msg'] = "Se ha producido un error:".$th->getMessage();
             $response['status'] = 0;
