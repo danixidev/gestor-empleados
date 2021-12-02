@@ -16,26 +16,35 @@ class UsersController extends Controller
             'email' => 'required|unique:users|max:255',
             'password' => 'required',
             'salary' => 'required',
-            'role' => 'required',
+            'role' => 'required|in:directive,human-resources,employee',       //['directive', 'human-resources', 'employee']
         ]);
 
         if ($validator->fails()) {
-            return redirect('post/create')
-                        ->withErrors($validator)
-                        ->withInput();
+            $response = ['status'=>0, 'msg'=>'Faltan datos por introducir o los datos han sido introducidos de forma erronea.'];
+        } else {
+            $response = ['status'=>1, 'msg'=>''];
+
+            $data = json_decode($data);
+
+            try {
+                $user = new User();
+
+                $user->name = $data->name;
+                $user->email = $data->email;
+                $user->password = $data->password;
+                $user->salary = $data->salary;
+                $user->role = $data->role;
+
+                $user->save();
+
+                $response['msg'] = "Usuario creado correctamente con el id ".$user->id;
+            } catch (\Throwable $th) {
+                $response['msg'] = "Se ha producido un error:".$th->getMessage();
+                $response['status'] = 0;
+            }
+
+
         }
-
-        $validated = $validator->validated();
-        $validated = json_encode($validated);
-
-        return $validated;
-        // $user = new User();
-
-        // $user->name = $validated[name];
-        // $user->email = $data->email;
-        // $user->password = $data->password;
-        // $user->salary = $data->salary;
-        // $user->role = $data->role;
-
+        return response()->json($response);
     }
 }
