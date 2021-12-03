@@ -96,6 +96,7 @@ class UsersController extends Controller
         }
         return response()->json($response);
     }
+
     public function view(Request $req) {
         $response = ['status'=>1, 'msg'=>''];
 
@@ -103,7 +104,10 @@ class UsersController extends Controller
         $data = json_decode($data);
 
         try {
-            // $response['data'] = ;
+            $users = User::all();
+            //TODO: check user viewing and show what they can see
+
+            $response['data'] = $users;
         } catch (\Throwable $th) {
             $response['msg'] = "Se ha producido un error:".$th->getMessage();
             $response['status'] = 0;

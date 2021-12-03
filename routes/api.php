@@ -18,6 +18,6 @@ use Illuminate\Support\Facades\Route;
 Route::put('/login', [UsersController::class, 'login']);
 
 Route::prefix('users')->group(function() {
-    Route::put('/create', [UsersController::class, 'create']);
-    Route::put('/view', [UsersController::class, 'view']);
+    Route::middleware(['api-auth', 'admin'])->put('/create', [UsersController::class, 'create']);
+    Route::middleware(['api-auth'])->get('/view', [UsersController::class, 'view']);
 });
