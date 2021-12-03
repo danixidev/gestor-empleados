@@ -17,6 +17,6 @@ class AuthApiToken
      */
     public function handle(Request $request, Closure $next)
     {
-
+        
     }
 }
