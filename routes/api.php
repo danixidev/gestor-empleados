@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::put('/login', [UsersController::class, 'login']);
 
 Route::prefix('users')->group(function() {
     Route::put('/create', [UsersController::class, 'create']);

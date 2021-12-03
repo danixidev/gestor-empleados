@@ -5,9 +5,58 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UsersController extends Controller
 {
+    public function login(Request $req) {
+        $data = $req->getContent();
+
+        $validator = Validator::make(json_decode($data, true), [
+            'email' => 'required',
+            'password' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            $response = ['status'=>0, 'msg'=>$validator->errors()->first()];
+        } else {
+            $response = ['status'=>1, 'msg'=>''];
+
+            $data = json_decode($data);
+
+            try {
+
+                $user = User::where('email', $data->email)->first();
+
+                if($user) {
+
+                    if(Hash::check($data->password, $user->password)) {
+                        $token = Hash::make(now().$user->id);
+
+                        $user->api_token = $token;
+                        $user->save();
+
+                        $response['msg'] = "Sesión iniciada correctamente. (Token: ".$token." )";
+                    } else {
+                        $response['msg'] = "La contraseña no coincide.";
+                        $response['status'] = 0;
+                    }
+
+                } else {
+                    $response['msg'] = "No hay ningún usuario con ese email.";
+                    $response['status'] = 0;
+                }
+
+            } catch (\Throwable $th) {
+                $response['msg'] = "Se ha producido un error: ".$th->getMessage();
+                $response['status'] = 0;
+            }
+
+
+        }
+        return response()->json($response);
+    }
+
     public function create(Request $req) {
         $data = $req->getContent();
 
@@ -31,7 +80,7 @@ class UsersController extends Controller
 
                 $user->name = $data->name;
                 $user->email = $data->email;
-                $user->password = $data->password;
+                $user->password = Hash::make($data->password);
                 $user->salary = $data->salary;
                 $user->role = $data->role;
 
