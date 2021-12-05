@@ -21,14 +21,13 @@ class AuthApiToken
 			$token = $request->input('api_token');
 			$user = User::where('api_token', $token)->first();
 			if(!$user){
-				return response('Api key no vale', 401);
+				return response('Api token not valid', 401);
 			} else {
-				$request->usuario = $user;
+				$request->user = $user;
 				return $next($request);
 			}
         } else {
-                return response('No api key', 401);
+                return response('No api token', 401);
         }
-
     }
 }
