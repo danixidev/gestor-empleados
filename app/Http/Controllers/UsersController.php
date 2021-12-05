@@ -92,6 +92,7 @@ class UsersController extends Controller
                 $response['status'] = 0;
             }
 
+
         }
         return response()->json($response);
     }
@@ -102,9 +103,15 @@ class UsersController extends Controller
         $data = $req->getContent();
         $data = json_decode($data);
 
+        $user = $req->user;
+
         try {
-            $users = User::all();
-            //TODO: check user viewing and show what they can see
+
+            if($user->role == 'directive') {
+                $users = User::all();
+            } else if($user->role == 'human-resources') {
+                $users = User::where('role', '<>', 'directive')->get();
+            }
 
             $response['data'] = $users;
         } catch (\Throwable $th) {
