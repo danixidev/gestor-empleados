@@ -64,6 +64,7 @@ class UsersController extends Controller
             'name' => 'required',
             'email' => 'required|unique:users|max:255',
             'password' => 'required',
+            'biography' => 'required',
             'salary' => 'required',
             'role' => 'required|in:directive,human-resources,employee',       //['directive', 'human-resources', 'employee']
         ]);
@@ -81,6 +82,7 @@ class UsersController extends Controller
                 $user->name = $data->name;
                 $user->email = $data->email;
                 $user->password = Hash::make($data->password);
+                $user->biography = $data->biography;
                 $user->salary = $data->salary;
                 $user->role = $data->role;
 
@@ -103,17 +105,124 @@ class UsersController extends Controller
         $data = $req->getContent();
         $data = json_decode($data);
 
-        $user = $req->user;
+        $user_auth = $req->user;
 
         try {
 
-            if($user->role == 'directive') {
+            if($user_auth->role == 'directive') {
                 $users = User::all();
-            } else if($user->role == 'human-resources') {
+            } else if($user_auth->role == 'human-resources') {
                 $users = User::where('role', '<>', 'directive')->get();
             }
 
             $response['data'] = $users;
+        } catch (\Throwable $th) {
+            $response['msg'] = "Se ha producido un error:".$th->getMessage();
+            $response['status'] = 0;
+        }
+
+        return response()->json($response);
+    }
+
+    public function viewDetails(Request $req) {
+        $response = ['status'=>1, 'msg'=>''];
+
+        $data = $req->getContent();
+        $data = json_decode($data);
+
+        $user_auth = $req->user;
+
+        try {
+
+            $user_details = User::where('id', $data->user_id)->first();
+
+            $user_details->makeVisible('email', 'biography');
+
+            if($user_details) {
+                if($user_auth->role == 'directive') {
+                    $information = $user_details;
+
+                } else if($user_auth->role == 'human-resources') {
+
+                    if($user_details->role != 'directive') {
+                        $information = $user_details;
+                    } else {
+                        $response['msg'] = "You don't have permissions to view this user.";
+                        $response['status'] = 0;
+                    }
+
+                } else {
+                    $response['msg'] = "You don't have permissions to view this user.";
+                    $response['status'] = 0;
+                }
+
+                if(isset($information)) {
+                    $response['data'] = $information;
+                }
+            } else {
+                $response['msg'] = "User id doesn't exist.";
+                $response['status'] = 0;
+            }
+
+        } catch (\Throwable $th) {
+            $response['msg'] = "Se ha producido un error:".$th->getMessage();
+            $response['status'] = 0;
+        }
+
+        return response()->json($response);
+    }
+
+    public function profile(Request $req) {
+        $response = ['status'=>1, 'msg'=>''];
+
+        $data = $req->getContent();
+        $data = json_decode($data);
+
+        $user_auth = $req->user;
+        $user_auth->makeVisible('email', 'biography');
+
+        try {
+
+            $response['data'] = $user_auth;
+        } catch (\Throwable $th) {
+            $response['msg'] = "Se ha producido un error:".$th->getMessage();
+            $response['status'] = 0;
+        }
+
+        return response()->json($response);
+    }
+
+    public function edit(Request $req) {
+        $response = ['status'=>1, 'msg'=>''];
+
+        $dataJ = $req->getContent();
+        $data = json_decode($dataJ);
+
+        $user_auth = $req->user;
+
+        try {
+            if(isset($req->user_id)) {
+
+                // Fetch user to edit
+                $user = User::find($req->user_id);
+
+                $validator = Validator::make(json_decode($dataJ, true), [
+                    'email' => 'unique:users|max:255',
+                    'role' => 'in:directive,human-resources,employee',       //['directive', 'human-resources', 'employee']
+                ]);
+
+                if ($validator->fails()) {
+                    $response = ['status'=>0, 'msg'=>$validator->errors()->first()];
+                } else {
+                    //Añadir compobar usuario que esta editando y si está editando a alguien que puede editar.
+
+                    $response['data'] = 'Funciona';
+                }
+            } else {
+                $response['msg'] = "You have to input a user_id to be edited.";
+                $response['status'] = 0;
+            }
+
         } catch (\Throwable $th) {
             $response['msg'] = "Se ha producido un error:".$th->getMessage();
             $response['status'] = 0;

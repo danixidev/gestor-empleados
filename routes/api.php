@@ -19,5 +19,11 @@ Route::put('/login', [UsersController::class, 'login']);
 
 Route::prefix('users')->group(function() {
     Route::middleware(['api-auth', 'admin-auth'])->put('/create', [UsersController::class, 'create']);
+
     Route::middleware(['api-auth', 'admin-auth'])->get('/view', [UsersController::class, 'view']);
+    Route::middleware(['api-auth', 'admin-auth'])->put('/view', [UsersController::class, 'viewDetails']);
+
+    Route::middleware(['api-auth'])->get('/profile', [UsersController::class, 'profile']);
+
+    Route::middleware(['api-auth', 'admin-auth'])->put('/edit', [UsersController::class, 'edit']);
 });

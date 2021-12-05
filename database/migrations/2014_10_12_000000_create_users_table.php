@@ -18,6 +18,7 @@ class CreateUsersTable extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
+            $table->string('biography');
             $table->double('salary');
             $table->enum('role', ['directive', 'human-resources', 'employee']);
             $table->String('api_token')->unique()->nullable();
