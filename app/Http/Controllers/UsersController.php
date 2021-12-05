@@ -92,7 +92,6 @@ class UsersController extends Controller
                 $response['status'] = 0;
             }
 
-
         }
         return response()->json($response);
     }
