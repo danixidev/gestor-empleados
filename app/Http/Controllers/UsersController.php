@@ -245,7 +245,7 @@ class UsersController extends Controller
             $user = User::find($user_auth->id);
 
             if($user) {
-
+                $password = '131';
             }
 
             Mail::to($user->mail)->send(new Message($password));
