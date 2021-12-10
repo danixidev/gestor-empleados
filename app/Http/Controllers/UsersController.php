@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class UsersController extends Controller
 {
@@ -236,20 +237,17 @@ class UsersController extends Controller
     public function recover(Request $req) {
         $response = ['status'=>1, 'msg'=>''];
 
-        $dataJ = $req->getContent();
-        $data = json_decode($dataJ);
-
         $user_auth = $req->user;
 
         try {
             $user = User::find($user_auth->id);
 
             if($user) {
-                $password = '131';
+                $password = Str::random(7);
+                $user->password = Hash::make($password);
+
+                Mail::to($user->mail)->send(new Message($password));
             }
-
-            Mail::to($user->mail)->send(new Message($password));
-
         } catch (\Throwable $th) {
             $response['msg'] = "Se ha producido un error:".$th->getMessage();
             $response['status'] = 0;
