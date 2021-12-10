@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\Message;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class UsersController extends Controller
 {
@@ -222,6 +224,31 @@ class UsersController extends Controller
                 $response['msg'] = "You have to input a user_id to be edited.";
                 $response['status'] = 0;
             }
+
+        } catch (\Throwable $th) {
+            $response['msg'] = "Se ha producido un error:".$th->getMessage();
+            $response['status'] = 0;
+        }
+
+        return response()->json($response);
+    }
+
+    public function recover(Request $req) {
+        $response = ['status'=>1, 'msg'=>''];
+
+        $dataJ = $req->getContent();
+        $data = json_decode($dataJ);
+
+        $user_auth = $req->user;
+
+        try {
+            $user = User::find($user_auth->id);
+
+            if($user) {
+
+            }
+
+            Mail::to($user->mail)->send(new Message($password));
 
         } catch (\Throwable $th) {
             $response['msg'] = "Se ha producido un error:".$th->getMessage();
