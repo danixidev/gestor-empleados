@@ -182,7 +182,6 @@ class UsersController extends Controller
         $user_auth->makeVisible('email', 'biography');
 
         try {
-
             $response['data'] = $user_auth;
         } catch (\Throwable $th) {
             $response['msg'] = "Se ha producido un error:".$th->getMessage();
@@ -206,17 +205,57 @@ class UsersController extends Controller
                 // Fetch user to edit
                 $user = User::find($req->user_id);
 
-                $validator = Validator::make(json_decode($dataJ, true), [
-                    'email' => 'unique:users|max:255',
-                    'role' => 'in:directive,human-resources,employee',       //['directive', 'human-resources', 'employee']
-                ]);
-
-                if ($validator->fails()) {
-                    $response = ['status'=>0, 'msg'=>$validator->errors()->first()];
+                //Añadir compobar usuario que esta editando y si está editando a alguien que puede editar.
+                $edit = false;
+                if($user_auth->role == 'directive') {
+                    if($user->role == 'directive') {
+                        if($user->id == $user_auth->id) {
+                            $edit = true;
+                        } else {
+                            $response['msg'] = "You cant edit this user.";
+                            $response['status'] = 0;
+                        }
+                    } else {
+                        $edit = true;
+                    }
                 } else {
-                    //Añadir compobar usuario que esta editando y si está editando a alguien que puede editar.
+                    if($user->role == 'employee') {
+                        $edit = true;
+                    } else {
+                        $response['msg'] = "You cant edit this user.";
+                        $response['status'] = 0;
+                    }
+                }
 
-                    $response['data'] = 'Funciona';
+                if($edit) {
+                    $validator = Validator::make(json_decode($dataJ, true), [
+                        'email' => 'unique:users|max:255',
+                        'role' => 'in:directive,human-resources,employee',       //['directive', 'human-resources', 'employee']
+                    ]);
+
+                    if ($validator->fails()) {
+                        $response = ['status'=>0, 'msg'=>$validator->errors()->first()];
+                    } else {
+
+                        if(isset($data->name)) {
+                            $user->name = $data->name;
+                        }
+                        if(isset($data->email)) {
+                            $user->email = $data->email;
+                        }
+                        if(isset($data->biography)) {
+                            $user->biography = $data->biography;
+                        }
+                        if(isset($data->salary)) {
+                            $user->salary = $data->salary;
+                        }
+                        if(isset($data->role)) {
+                            $user->role = $data->role;
+                        }
+
+                        $user->save();
+                        $response['msg'] = 'User saved';
+                    }
                 }
             } else {
                 $response['msg'] = "You have to input a user_id to be edited.";
