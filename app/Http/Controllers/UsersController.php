@@ -296,11 +296,52 @@ class UsersController extends Controller
                 $user->save();
 
                 Mail::to($user->mail)->send(new Message($password));        //TODO: arreglar errores al enviar mail
-                $response['msg'] = "Mensaje enviado correctamente.";
+                $response['msg'] = "Mensaje enviado correctamente. ( ".$password." )";
             }
         } catch (\Throwable $th) {
             $response['msg'] = "Se ha producido un error:".$th->getMessage();
             $response['status'] = 0;
+        }
+
+        return response()->json($response);
+    }
+
+    public function changePassword(Request $req) {
+        $response = ['status'=>1, 'msg'=>''];
+
+        $user_auth = $req->user;
+        $user = User::find($user_auth->id);
+
+        $dataJ = $req->getContent();
+        $data = json_decode($dataJ);
+
+        $validator = Validator::make(json_decode($dataJ, true), [
+            'old_password' => 'required',
+            'password' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            $response = ['status'=>0, 'msg'=>$validator->errors()->first()];
+        } else {
+            try {
+                if(Hash::check($data->old_password, $user->password)) {
+                    if(preg_match('/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9A-Za-z]{6,30}$/', $data->password)) {        //Al menos un digito, una letra mayuscula, una minuscula, y que tenga al menos 6 digitos
+                        $user->password = Hash::make($data->password);
+                        $user->save();
+
+                        $response['msg'] = "Contraseña cambiada correctamente.";
+                    } else {
+                        $response['msg'] = "La contraseña no cumple los requisitos (>6 caracteres, al menos 1 mayuscula, al menos 1 numero)";
+                        $response['status'] = 0;
+                    }
+                } else {
+                    $response['msg'] = "La contraseña antigua no coincide.";
+                    $response['status'] = 0;
+                }
+            } catch (\Throwable $th) {
+                $response['msg'] = "Se ha producido un error:".$th->getMessage();
+                $response['status'] = 0;
+            }
         }
 
         return response()->json($response);
