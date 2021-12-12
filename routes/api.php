@@ -26,4 +26,6 @@ Route::prefix('users')->group(function() {
     Route::middleware(['api-auth'])->get('/profile', [UsersController::class, 'profile']);
 
     Route::middleware(['api-auth', 'admin-auth'])->put('/edit', [UsersController::class, 'edit']);
+
+    Route::middleware(['api-auth'])->put('/recover', [UsersController::class, 'recover']);
 });
