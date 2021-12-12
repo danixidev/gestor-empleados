@@ -79,25 +79,28 @@ class UsersController extends Controller
 
             $data = json_decode($data);
 
-            try {
-                $user = new User();
+            if(preg_match('/^(?=.*\d)(?=.*[A-Za-z])[0-9A-Za-z]{6,30}$/', $data->password)) {        //Al menos un digito, una letra mayuscula, una minuscula, y que tenga al menos 6 digitos
+                try {
+                    $user = new User();
 
-                $user->name = $data->name;
-                $user->email = $data->email;
-                $user->password = Hash::make($data->password);
-                $user->biography = $data->biography;
-                $user->salary = $data->salary;
-                $user->role = $data->role;
+                    $user->name = $data->name;
+                    $user->email = $data->email;
+                    $user->password = Hash::make($data->password);
+                    $user->biography = $data->biography;
+                    $user->salary = $data->salary;
+                    $user->role = $data->role;
 
-                $user->save();
+                    $user->save();
 
-                $response['msg'] = "Usuario creado correctamente con el id ".$user->id;
-            } catch (\Throwable $th) {
-                $response['msg'] = "Se ha producido un error:".$th->getMessage();
+                    $response['msg'] = "Usuario creado correctamente con el id ".$user->id;
+                } catch (\Throwable $th) {
+                    $response['msg'] = "Se ha producido un error:".$th->getMessage();
+                    $response['status'] = 0;
+                }
+            } else {
+                $response['msg'] = "La contraseña no cumple los requisitos (>6 caracteres, al menos 1 mayuscula, al menos 1 numero)";
                 $response['status'] = 0;
             }
-
-
         }
         return response()->json($response);
     }
@@ -224,6 +227,13 @@ class UsersController extends Controller
                 } else {
                     if($user->role == 'employee') {
                         $edit = true;
+                    } else if($user->role == 'human-resources') {
+                        if($user->id == $user_auth->id) {
+                            $edit = true;
+                        } else {
+                            $response['msg'] = "You cant edit this user.";
+                            $response['status'] = 0;
+                        }
                     } else {
                         $response['msg'] = "You cant edit this user.";
                         $response['status'] = 0;
@@ -252,7 +262,7 @@ class UsersController extends Controller
                         if(isset($data->salary)) {
                             $user->salary = $data->salary;
                         }
-                        if(isset($data->role)) {
+                        if(isset($data->role) && $user_auth->role == 'directive') {     //Solo los directivos pueden cambiar los roles de las personas (para que una persona de rrhh no se cambie a directivo)
                             $user->role = $data->role;
                         }
 
@@ -277,15 +287,16 @@ class UsersController extends Controller
         $response = ['status'=>1, 'msg'=>''];
 
         $user_auth = $req->user;
+        $user = User::find($user_auth->id);
 
         try {
-            $user = User::find($user_auth->id);
-
             if($user) {
-                $password = Str::random(7);
+                $password = Str::random(8);
                 $user->password = Hash::make($password);
+                $user->save();
 
-                Mail::to($user->mail)->send(new Message($password));
+                Mail::to($user->mail)->send(new Message($password));        //TODO: arreglar errores al enviar mail
+                $response['msg'] = "Mensaje enviado correctamente.";
             }
         } catch (\Throwable $th) {
             $response['msg'] = "Se ha producido un error:".$th->getMessage();

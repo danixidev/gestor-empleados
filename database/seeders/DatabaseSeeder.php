@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
 
         DB::table('users')->insert([
 			'name' => 'Daniel Ximenez',
-			'email' => 'daniximenez@cev.com',
+			'email' => 'danixidev@gmail.com',
 			'password' => Hash::make('password'),
 			'biography' => 'Esta es la biografia de un usuario, solo es una prueba.',
 			'salary' => 50000,
