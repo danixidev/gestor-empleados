@@ -24,6 +24,6 @@ class DatabaseSeeder extends Seeder
 			'biography' => 'Esta es la biografia de un usuario, solo es una prueba.',
 			'salary' => 50000,
 			'role' => 'directive',
-]);
+        ]);
     }
 }
