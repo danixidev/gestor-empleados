@@ -5,10 +5,10 @@
     <title>Document</title>
 </head>
 <body>
-    <h2>Recuperar contraseña</h2>
+    <h1>Recuperar contraseña</h1>
 
     <p>La nueva contraseña es:</p>
-    {{$password}}
+    <h2>{{$password}}</h2>
 
 </body>
 </html>

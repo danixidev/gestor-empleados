@@ -295,8 +295,8 @@ class UsersController extends Controller
                 $user->password = Hash::make($password);
                 $user->save();
 
-                Mail::to($user->mail)->send(new Message($password));        //TODO: arreglar errores al enviar mail
-                $response['msg'] = "Mensaje enviado correctamente. ( ".$password." )";
+                Mail::to($user)->send(new Message($password));
+                $response['msg'] = "Mensaje enviado correctamente.";
             }
         } catch (\Throwable $th) {
             $response['msg'] = "Se ha producido un error:".$th->getMessage();
