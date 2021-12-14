@@ -165,12 +165,12 @@ class UsersController extends Controller
                     if($user_details->role != 'directive') {        //Si es de recursos humanos lo muestra si no es directivo
                         $information = $user_details;
                     } else {
-                        $response['msg'] = "You don't have permissions to view this user.";     //Si no muestra un error
+                        $response['msg'] = "No tienes permisos para ver este usuario.";     //Si no muestra un error
                         $response['status'] = 0;
                     }
 
                 } else {
-                    $response['msg'] = "You don't have permissions to view this user.";
+                    $response['msg'] = "No tienes permisos para ver este usuario.";
                     $response['status'] = 0;
                 }
 
@@ -229,7 +229,7 @@ class UsersController extends Controller
                         if($user->id == $user_auth->id) {       //Si es el mismo lo edita, si no muestra un error
                             $edit = true;
                         } else {
-                            $response['msg'] = "You cant edit this user.";
+                            $response['msg'] = "No puedes editar este usuario.";
                             $response['status'] = 0;
                         }
                     } else {
@@ -242,11 +242,11 @@ class UsersController extends Controller
                         if($user->id == $user_auth->id) {       //Si es recursos humanos y es él mismo, se edita
                             $edit = true;
                         } else {
-                            $response['msg'] = "You cant edit this user.";
+                            $response['msg'] = "No puedes editar este usuario.";
                             $response['status'] = 0;
                         }
                     } else {
-                        $response['msg'] = "You cant edit this user.";
+                        $response['msg'] = "No puedes editar este usuario.";
                         $response['status'] = 0;
                     }
                 }
@@ -266,7 +266,11 @@ class UsersController extends Controller
                             $user->name = $data->name;
                         }
                         if(isset($data->email)) {
-                            $user->email = $data->email;
+                            if(preg_match('/^[a-zA-Z0-9.-_]{1,30}@[a-zA-Z0-9]{1,10}\.[a-zA-Z]{2,5}$/', $data->email)) {
+                                $user->email = $data->email;
+                            } else {
+                                $edit = false;
+                            }
                         }
                         if(isset($data->biography)) {
                             $user->biography = $data->biography;
@@ -278,12 +282,17 @@ class UsersController extends Controller
                             $user->role = $data->role;
                         }
 
-                        $user->save();
-                        $response['msg'] = 'User saved';
+                        if($edit) {
+                            $user->save();
+                            $response['msg'] = 'User saved';
+                        } else {
+                            $response['msg'] = "El email introducido no tiene un formato valido.";
+                            $response['status'] = 0;
+                        }
                     }
                 }
             } else {
-                $response['msg'] = "You have to input a user_id to be edited.";
+                $response['msg'] = "Tienes que introducir un user_id para ser editado.";
                 $response['status'] = 0;
             }
 
