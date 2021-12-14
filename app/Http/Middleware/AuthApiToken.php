@@ -17,9 +17,9 @@ class AuthApiToken
      */
     public function handle(Request $request, Closure $next)
     {
-        if($request->has('api_token')){
+        if($request->has('api_token')){         //Comprueba si el usuario tiene api_token
 			$token = $request->input('api_token');
-			$user = User::where('api_token', $token)->first();
+			$user = User::where('api_token', $token)->first();      //Si lo tiene saca el usuario y lo envia por el request
 			if(!$user){
 				return response('Api token not valid', 401);
 			} else {
