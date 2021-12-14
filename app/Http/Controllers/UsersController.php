@@ -307,8 +307,10 @@ class UsersController extends Controller
     public function recover(Request $req) {
         $response = ['status'=>1, 'msg'=>''];
 
-        $user_auth = $req->user;
-        $user = User::find($user_auth->id);
+        $dataJ = $req->getContent();
+        $data = json_decode($dataJ);
+
+        $user = User::find($data->id);
 
         try {
             if($user) {
