@@ -28,5 +28,5 @@ Route::prefix('users')->group(function() {
     Route::middleware(['api-auth', 'admin-auth'])->put('/edit', [UsersController::class, 'edit']);
 
     Route::middleware(['api-auth'])->get('/recover', [UsersController::class, 'recover']);
-    Route::middleware(['api-auth'])->put('/changePassword', [UsersController::class, 'changePassword']);
+    Route::put('/changePassword', [UsersController::class, 'changePassword']);
 });
