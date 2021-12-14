@@ -39,7 +39,8 @@ class UsersController extends Controller
                         $user->api_token = $token;
                         $user->save();
 
-                        $response['msg'] = "Sesión iniciada correctamente. (Token: ".$token." )";
+                        $response['data'] = $token;
+                        $response['msg'] = "Sesión iniciada correctamente.";
                     } else {
                         $response['msg'] = "La contraseña no coincide.";
                         $response['status'] = 0;
