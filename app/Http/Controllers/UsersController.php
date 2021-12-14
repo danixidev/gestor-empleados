@@ -80,26 +80,31 @@ class UsersController extends Controller
 
             $data = json_decode($data);
 
-            if(preg_match('/^(?=.*\d)(?=.*[A-Za-z])[0-9A-Za-z]{6,30}$/', $data->password)) {        //Al menos un digito, una letra mayuscula, una minuscula, y que tenga al menos 6 digitos
-                try {
-                    $user = new User();
+            if(preg_match('/^[a-zA-Z0-9.-_]{1,30}@[a-zA-Z0-9]{1,10}\.[a-zA-Z]{2,5}$/', $data->email)) {
+                if(preg_match('/^(?=.*\d)(?=.*[A-Za-z])[0-9A-Za-z]{6,30}$/', $data->password)) {        //Al menos un digito, una letra mayuscula, una minuscula, y que tenga al menos 6 digitos
+                    try {
+                        $user = new User();
 
-                    $user->name = $data->name;
-                    $user->email = $data->email;
-                    $user->password = Hash::make($data->password);
-                    $user->biography = $data->biography;
-                    $user->salary = $data->salary;
-                    $user->role = $data->role;
+                        $user->name = $data->name;
+                        $user->email = $data->email;
+                        $user->password = Hash::make($data->password);
+                        $user->biography = $data->biography;
+                        $user->salary = $data->salary;
+                        $user->role = $data->role;
 
-                    $user->save();
+                        $user->save();
 
-                    $response['msg'] = "Usuario creado correctamente con el id ".$user->id;
-                } catch (\Throwable $th) {
-                    $response['msg'] = "Se ha producido un error:".$th->getMessage();
+                        $response['msg'] = "Usuario creado correctamente con el id ".$user->id;
+                    } catch (\Throwable $th) {
+                        $response['msg'] = "Se ha producido un error:".$th->getMessage();
+                        $response['status'] = 0;
+                    }
+                } else {
+                    $response['msg'] = "La contraseña no cumple los requisitos (>6 caracteres, al menos 1 mayuscula, al menos 1 numero)";
                     $response['status'] = 0;
                 }
             } else {
-                $response['msg'] = "La contraseña no cumple los requisitos (>6 caracteres, al menos 1 mayuscula, al menos 1 numero)";
+                $response['msg'] = "El formato del email no es válido.";
                 $response['status'] = 0;
             }
         }
