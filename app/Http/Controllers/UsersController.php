@@ -15,11 +15,13 @@ class UsersController extends Controller
     public function login(Request $req) {
         $data = $req->getContent();
 
+        // Comprueba los datos que se tienen que introducir
         $validator = Validator::make(json_decode($data, true), [
             'email' => 'required',
             'password' => 'required',
         ]);
 
+        //Si falla muestra el erorr
         if ($validator->fails()) {
             $response = ['status'=>0, 'msg'=>$validator->errors()->first()];
         } else {
@@ -29,14 +31,14 @@ class UsersController extends Controller
 
             try {
 
-                $user = User::where('email', $data->email)->first();
+                $user = User::where('email', $data->email)->first();    //Comrpueba si el usuario existe
 
                 if($user) {
 
-                    if(Hash::check($data->password, $user->password)) {
+                    if(Hash::check($data->password, $user->password)) {     //Si existe comprueba la contraseña introducida
                         $token = Hash::make(now().$user->id);
 
-                        $user->api_token = $token;
+                        $user->api_token = $token;      //Si coincide inicia sesión creando un token
                         $user->save();
 
                         $response['data'] = $token;
@@ -64,6 +66,7 @@ class UsersController extends Controller
     public function create(Request $req) {
         $data = $req->getContent();
 
+        //Comprueba los datos introducidos (comprueba que el mail es único y que en el rol has introducido un rol valido)
         $validator = Validator::make(json_decode($data, true), [
             'name' => 'required',
             'email' => 'required|unique:users|max:255',
@@ -80,11 +83,13 @@ class UsersController extends Controller
 
             $data = json_decode($data);
 
-            if(preg_match('/^[a-zA-Z0-9.-_]{1,30}@[a-zA-Z0-9]{1,10}\.[a-zA-Z]{2,5}$/', $data->email)) {
+            //Comprueba el formato de la dirección de correo, si funciona comprueba el de la contraseña
+            if(preg_match('/^[a-zA-Z0-9.-_]{1,30}@[a-zA-Z0-9]{1,10}\.[a-zA-Z]{2,5}$/', $data->email)) {     //Que comience por una palabra seguida de un @, otra palabra, un punto y el dominio
                 if(preg_match('/^(?=.*\d)(?=.*[A-Za-z])[0-9A-Za-z]{6,30}$/', $data->password)) {        //Al menos un digito, una letra mayuscula, una minuscula, y que tenga al menos 6 digitos
                     try {
                         $user = new User();
 
+                        //Crea el usuario tras haber comprobado todos los datos
                         $user->name = $data->name;
                         $user->email = $data->email;
                         $user->password = Hash::make($data->password);
@@ -121,9 +126,10 @@ class UsersController extends Controller
 
         try {
 
-            if($user_auth->role == 'directive') {
+
+            if($user_auth->role == 'directive') {   //Si es directivo muestra a todos los usuarios
                 $users = User::all();
-            } else if($user_auth->role == 'human-resources') {
+            } else if($user_auth->role == 'human-resources') {      //Si es recursos humanos muestra a los que no son directivos
                 $users = User::where('role', '<>', 'directive')->get();
             }
 
@@ -151,15 +157,15 @@ class UsersController extends Controller
             $user_details->makeVisible('email', 'biography');
 
             if($user_details) {
-                if($user_auth->role == 'directive') {
+                if($user_auth->role == 'directive') {       //Si el usuario viendo es directivo lo muestra
                     $information = $user_details;
 
                 } else if($user_auth->role == 'human-resources') {
 
-                    if($user_details->role != 'directive') {
+                    if($user_details->role != 'directive') {        //Si es de recursos humanos lo muestra si no es directivo
                         $information = $user_details;
                     } else {
-                        $response['msg'] = "You don't have permissions to view this user.";
+                        $response['msg'] = "You don't have permissions to view this user.";     //Si no muestra un error
                         $response['status'] = 0;
                     }
 
@@ -194,7 +200,7 @@ class UsersController extends Controller
         $user_auth->makeVisible('email', 'biography');
 
         try {
-            $response['data'] = $user_auth;
+            $response['data'] = $user_auth;     //Muestra el usuario autenitificado (a sí mismo)
         } catch (\Throwable $th) {
             $response['msg'] = "Se ha producido un error:".$th->getMessage();
             $response['status'] = 0;
@@ -217,11 +223,10 @@ class UsersController extends Controller
                 // Fetch user to edit
                 $user = User::find($req->user_id);
 
-                //Añadir compobar usuario que esta editando y si está editando a alguien que puede editar.
                 $edit = false;
-                if($user_auth->role == 'directive') {
-                    if($user->role == 'directive') {
-                        if($user->id == $user_auth->id) {
+                if($user_auth->role == 'directive') {       //Si el usuario editando es directivo
+                    if($user->role == 'directive') {        //Y el usuario editado tambien es directivo
+                        if($user->id == $user_auth->id) {       //Si es el mismo lo edita, si no muestra un error
                             $edit = true;
                         } else {
                             $response['msg'] = "You cant edit this user.";
@@ -231,10 +236,10 @@ class UsersController extends Controller
                         $edit = true;
                     }
                 } else {
-                    if($user->role == 'employee') {
+                    if($user->role == 'employee') {         //Si el usuario a editar es empleado se edita
                         $edit = true;
                     } else if($user->role == 'human-resources') {
-                        if($user->id == $user_auth->id) {
+                        if($user->id == $user_auth->id) {       //Si es recursos humanos y es él mismo, se edita
                             $edit = true;
                         } else {
                             $response['msg'] = "You cant edit this user.";
@@ -247,6 +252,7 @@ class UsersController extends Controller
                 }
 
                 if($edit) {
+                    //Se comprueban los unicos datos que validar, email único y rol válido
                     $validator = Validator::make(json_decode($dataJ, true), [
                         'email' => 'unique:users|max:255',
                         'role' => 'in:directive,human-resources,employee',       //['directive', 'human-resources', 'employee']
@@ -297,11 +303,11 @@ class UsersController extends Controller
 
         try {
             if($user) {
-                $password = Str::random(8);
-                $user->password = Hash::make($password);
+                $password = Str::random(8);     //Crea una contraseña aleatoria
+                $user->password = Hash::make($password);        //La codifica
                 $user->save();
 
-                Mail::to($user)->send(new Message($password));
+                Mail::to($user)->send(new Message($password));      //Manda un mail al usuario con su nueva contraseña
                 $response['msg'] = "Mensaje enviado correctamente.";
             }
         } catch (\Throwable $th) {
@@ -317,6 +323,7 @@ class UsersController extends Controller
 
         $data = $req->getContent();
 
+        //comprueba los datos introducidos
         $validator = Validator::make(json_decode($data, true), [
             'email' => 'required',
             'old_password' => 'required',
@@ -329,9 +336,9 @@ class UsersController extends Controller
             $response = ['status'=>0, 'msg'=>$validator->errors()->first()];
         } else {
             try {
-                $user = User::where('email', $data->email)->first();
+                $user = User::where('email', $data->email)->first();        //Busca al usuario por el email
                 if($user) {
-                    if(Hash::check($data->old_password, $user->password)) {
+                    if(Hash::check($data->old_password, $user->password)) {     //Comprueba la contraseña antigua, si coincide guarda la nueva codificada
                         if(preg_match('/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9A-Za-z]{6,30}$/', $data->password)) {        //Al menos un digito, una letra mayuscula, una minuscula, y que tenga al menos 6 digitos
                             $user->password = Hash::make($data->password);
                             $user->save();
