@@ -123,9 +123,9 @@ class UsersController extends Controller
 
         try {
             if($user_auth->role == 'directive') {   //Si es directivo muestra a todos los usuarios
-                $users = User::all();
-            } else if($user_auth->role == 'human-resources') {      //Si es recursos humanos muestra a los que no son directivos
                 $users = User::where('role', '<>', 'directive')->get();
+            } else if($user_auth->role == 'human-resources') {      //Si es recursos humanos muestra a los que no son directivos
+                $users = User::where('role', 'employee')->get();
             }
 
             $response['data'] = $users;
@@ -148,29 +148,33 @@ class UsersController extends Controller
         try {
 
             $user_details = User::where('id', $data->user_id)->first();
-
-            $user_details->makeVisible('email', 'biography');
+            $information = false;
 
             if($user_details) {
-                if($user_auth->role == 'directive') {       //Si el usuario viendo es directivo lo muestra
-                    $information = $user_details;
-
-                } else if($user_auth->role == 'human-resources') {
-
-                    if($user_details->role != 'directive') {        //Si es de recursos humanos lo muestra si no es directivo
-                        $information = $user_details;
+                $user_details->makeVisible('email', 'biography');
+                if($user_auth->role == 'directive') {       //Si el usuario viendo es directivo lo muestra si es el mismo
+                    if($user_details->role == 'directive') {
+                        if($user_details->id == $user_auth->id) {
+                            $information = true;
+                        }
                     } else {
-                        $response['msg'] = "No tienes permisos para ver este usuario.";     //Si no muestra un error
-                        $response['status'] = 0;
+                        $information = true;
                     }
+                } else if($user_auth->role == 'human-resources') {
+                    if($user_details->role == 'human-resources') {
+                        if($user_details->id == $user_auth->id) {
+                            $information = true;
+                        }
+                    } else if ($user_details->role == 'employee'){
+                        $information = true;
+                    }
+                }
 
+                if($information) {
+                    $response['data'] = $user_details;
                 } else {
                     $response['msg'] = "No tienes permisos para ver este usuario.";
                     $response['status'] = 0;
-                }
-
-                if(isset($information)) {
-                    $response['data'] = $information;
                 }
             } else {
                 $response['msg'] = "El usuario introducido no existe";
@@ -224,9 +228,6 @@ class UsersController extends Controller
                         if($user->role == 'directive') {        //Y el usuario editado tambien es directivo
                             if($user->id == $user_auth->id) {       //Si es el mismo lo edita, si no muestra un error
                                 $edit = true;
-                            } else {
-                                $response['msg'] = "No puedes editar este usuario.";
-                                $response['status'] = 0;
                             }
                         } else {
                             $edit = true;
@@ -237,13 +238,7 @@ class UsersController extends Controller
                         } else if($user->role == 'human-resources') {
                             if($user->id == $user_auth->id) {       //Si es recursos humanos y es él mismo, se edita
                                 $edit = true;
-                            } else {
-                                $response['msg'] = "No puedes editar este usuario.";
-                                $response['status'] = 0;
                             }
-                        } else {
-                            $response['msg'] = "No puedes editar este usuario.";
-                            $response['status'] = 0;
                         }
                     }
                 } else {
@@ -290,6 +285,9 @@ class UsersController extends Controller
                             $response['status'] = 0;
                         }
                     }
+                } else {
+                    $response['msg'] = "No puedes editar este usuario.";
+                    $response['status'] = 0;
                 }
             } else {
                 $response['msg'] = "Tienes que introducir un user_id para ser editado.";
