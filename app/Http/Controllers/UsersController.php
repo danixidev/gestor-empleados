@@ -30,11 +30,9 @@ class UsersController extends Controller
             $data = json_decode($data);
 
             try {
-
                 $user = User::where('email', $data->email)->first();    //Comrpueba si el usuario existe
 
                 if($user) {
-
                     if(Hash::check($data->password, $user->password)) {     //Si existe comprueba la contraseña introducida
                         $token = Hash::make(now().$user->id);
 
@@ -47,7 +45,6 @@ class UsersController extends Controller
                         $response['msg'] = "La contraseña no coincide.";
                         $response['status'] = 0;
                     }
-
                 } else {
                     $response['msg'] = "No hay ningún usuario con ese email.";
                     $response['status'] = 0;
@@ -176,7 +173,7 @@ class UsersController extends Controller
                     $response['data'] = $information;
                 }
             } else {
-                $response['msg'] = "User id doesn't exist.";
+                $response['msg'] = "El usuario introducido no existe";
                 $response['status'] = 0;
             }
 
@@ -222,31 +219,36 @@ class UsersController extends Controller
                 $user = User::find($req->user_id);
 
                 $edit = false;
-                if($user_auth->role == 'directive') {       //Si el usuario editando es directivo
-                    if($user->role == 'directive') {        //Y el usuario editado tambien es directivo
-                        if($user->id == $user_auth->id) {       //Si es el mismo lo edita, si no muestra un error
+                if($user) {
+                    if($user_auth->role == 'directive') {       //Si el usuario editando es directivo
+                        if($user->role == 'directive') {        //Y el usuario editado tambien es directivo
+                            if($user->id == $user_auth->id) {       //Si es el mismo lo edita, si no muestra un error
+                                $edit = true;
+                            } else {
+                                $response['msg'] = "No puedes editar este usuario.";
+                                $response['status'] = 0;
+                            }
+                        } else {
                             $edit = true;
+                        }
+                    } else {
+                        if($user->role == 'employee') {         //Si el usuario a editar es empleado se edita
+                            $edit = true;
+                        } else if($user->role == 'human-resources') {
+                            if($user->id == $user_auth->id) {       //Si es recursos humanos y es él mismo, se edita
+                                $edit = true;
+                            } else {
+                                $response['msg'] = "No puedes editar este usuario.";
+                                $response['status'] = 0;
+                            }
                         } else {
                             $response['msg'] = "No puedes editar este usuario.";
                             $response['status'] = 0;
                         }
-                    } else {
-                        $edit = true;
                     }
                 } else {
-                    if($user->role == 'employee') {         //Si el usuario a editar es empleado se edita
-                        $edit = true;
-                    } else if($user->role == 'human-resources') {
-                        if($user->id == $user_auth->id) {       //Si es recursos humanos y es él mismo, se edita
-                            $edit = true;
-                        } else {
-                            $response['msg'] = "No puedes editar este usuario.";
-                            $response['status'] = 0;
-                        }
-                    } else {
-                        $response['msg'] = "No puedes editar este usuario.";
-                        $response['status'] = 0;
-                    }
+                    $response['msg'] = "El usuario introducido no existe";
+                    $response['status'] = 0;
                 }
 
                 if($edit) {
@@ -318,6 +320,9 @@ class UsersController extends Controller
 
                 Mail::to($user)->send(new Message($password));      //Manda un mail al usuario con su nueva contraseña
                 $response['msg'] = "Mensaje enviado correctamente.";
+            } else {
+                $response['msg'] = "El usuario introducido no existe";
+                $response['status'] = 0;
             }
         } catch (\Throwable $th) {
             $response['msg'] = "Se ha producido un error:".$th->getMessage();

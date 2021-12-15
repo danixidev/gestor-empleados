@@ -17,17 +17,21 @@ class AuthApiToken
      */
     public function handle(Request $request, Closure $next)
     {
-        if($request->has('api_token')){         //Comprueba si el usuario tiene api_token
-			$token = $request->input('api_token');
-			$user = User::where('api_token', $token)->first();      //Si lo tiene saca el usuario y lo envia por el request
-			if(!$user){
-				return response('Api token not valid', 401);
-			} else {
-				$request->user = $user;
-				return $next($request);
-			}
-        } else {
+        try {
+            if($request->has('api_token')){         //Comprueba si el usuario tiene api_token
+                $token = $request->input('api_token');
+                $user = User::where('api_token', $token)->first();      //Si lo tiene saca el usuario y lo envia por el request
+                if(!$user){
+                    return response('Api token not valid', 401);
+                } else {
+                    $request->user = $user;
+                    return $next($request);
+                }
+            } else {
                 return response('No api token', 401);
+            }
+        } catch (\Throwable $th) {
+            return response("Se ha producido un error: ".$th->getMessage(), 500);
         }
     }
 }

@@ -16,13 +16,17 @@ class AuthAdmin
      */
     public function handle(Request $request, Closure $next)
     {
-        $user = $request->user;
+        try {
+            $user = $request->user;
 
-        if($user->role != 'employee') {     //Comprueba que no sea un empleado
-            $request->user = $user;
-            return $next($request);     //Si es asi, continua y manda el usuario por el request
-        } else {
-            return response("User doesn't have enough permissions", 401);
+            if($user->role != 'employee') {     //Comprueba que no sea un empleado
+                $request->user = $user;
+                return $next($request);     //Si es asi, continua y manda el usuario por el request
+            } else {
+                return response("User doesn't have enough permissions", 401);
+            }
+        } catch (\Throwable $th) {
+            return response("Se ha producido un error:".$th->getMessage(), 500);
         }
     }
 }
