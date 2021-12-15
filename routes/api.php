@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('databaseConnection-check')->group(function() {
+Route::middleware('databaseConnection-check')->group(function() {       //Comprueba la conexión a la base de datos antes de relizarla, para mostrar un mensaje de codigo 500
     Route::put('/login', [UsersController::class, 'login']);
 
     Route::prefix('users')->group(function() {
