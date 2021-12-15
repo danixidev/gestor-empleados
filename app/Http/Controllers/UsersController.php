@@ -125,8 +125,6 @@ class UsersController extends Controller
         $user_auth = $req->user;
 
         try {
-
-
             if($user_auth->role == 'directive') {   //Si es directivo muestra a todos los usuarios
                 $users = User::all();
             } else if($user_auth->role == 'human-resources') {      //Si es recursos humanos muestra a los que no son directivos
