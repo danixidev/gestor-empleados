@@ -18,7 +18,7 @@ class CheckDatabaseConnection
     public function handle(Request $request, Closure $next)
     {
         try {
-            $users = User::all();
+            User::all();
             return $next($request);
         } catch (\Throwable $th) {
             return response($th->getMessage(), 500);
