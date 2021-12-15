@@ -2,10 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 
-class AuthAdmin
+class CheckDatabaseConnection
 {
     /**
      * Handle an incoming request.
@@ -17,14 +18,8 @@ class AuthAdmin
     public function handle(Request $request, Closure $next)
     {
         try {
-            $user = $request->user;
-
-            if($user->role != 'employee') {     //Comprueba que no sea un empleado
-                $request->user = $user;
-                return $next($request);     //Si es asi, continua y manda el usuario por el request
-            } else {
-                return response("User doesn't have enough permissions", 401);
-            }
+            $users = User::all();
+            return $next($request);
         } catch (\Throwable $th) {
             return response($th->getMessage(), 500);
         }

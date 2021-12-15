@@ -31,7 +31,7 @@ class AuthApiToken
                 return response('No api token', 401);
             }
         } catch (\Throwable $th) {
-            return response("Se ha producido un error: ".$th->getMessage(), 500);
+            return response($th->getMessage(), 500);
         }
     }
 }

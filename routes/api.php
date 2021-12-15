@@ -15,18 +15,21 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::put('/login', [UsersController::class, 'login']);
 
-Route::prefix('users')->group(function() {
-    Route::middleware(['api-auth', 'admin-auth'])->put('/create', [UsersController::class, 'create']);
+Route::middleware('databaseConnection-check')->group(function() {
+    Route::put('/login', [UsersController::class, 'login']);
 
-    Route::middleware(['api-auth', 'admin-auth'])->get('/view', [UsersController::class, 'view']);
-    Route::middleware(['api-auth', 'admin-auth'])->put('/view', [UsersController::class, 'viewDetails']);
+    Route::prefix('users')->group(function() {
+        Route::middleware(['api-auth', 'admin-auth'])->put('/create', [UsersController::class, 'create']);
 
-    Route::middleware(['api-auth'])->get('/profile', [UsersController::class, 'profile']);
+        Route::middleware(['api-auth', 'admin-auth'])->get('/view', [UsersController::class, 'view']);
+        Route::middleware(['api-auth', 'admin-auth'])->put('/view', [UsersController::class, 'viewDetails']);
 
-    Route::middleware(['api-auth', 'admin-auth'])->put('/edit', [UsersController::class, 'edit']);
+        Route::middleware(['api-auth'])->get('/profile', [UsersController::class, 'profile']);
 
-    Route::put('/recover', [UsersController::class, 'recover']);
-    Route::put('/changePassword', [UsersController::class, 'changePassword']);
+        Route::middleware(['api-auth', 'admin-auth'])->put('/edit', [UsersController::class, 'edit']);
+
+        Route::put('/recover', [UsersController::class, 'recover']);
+        Route::put('/changePassword', [UsersController::class, 'changePassword']);
+    });
 });

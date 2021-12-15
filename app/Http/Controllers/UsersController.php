@@ -310,9 +310,8 @@ class UsersController extends Controller
         $dataJ = $req->getContent();
         $data = json_decode($dataJ);
 
-        $user = User::find($data->id);
-
         try {
+            $user = User::find($data->id);
             if($user) {
                 $password = Str::random(8);     //Crea una contraseña aleatoria
                 $user->password = Hash::make($password);        //La codifica
